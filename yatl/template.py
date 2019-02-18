@@ -821,13 +821,20 @@ class DummyResponse():
         if not escape:
             self.body.write(str(data))
         elif hasattr(data, 'xml') and callable(data.xml):
-            self.body.write(data.xml())
+            if PY2:
+                self.body.write(data.xml())
+            else:
+                self.body.write(str(data))
         else:
             # make it a string
-            if not isinstance(data, (str, unicodeT)):
-                data = str(data)
-            elif isinstance(data, unicodeT):
-                data = data.encode('utf8', 'xmlcharrefreplace')
+            if PY2:
+                if not isinstance(data, (str, unicodeT)):
+                    data = str(data)
+                elif isinstance(data, unicodeT):
+                    data = data.encode('utf8', 'xmlcharrefreplace')
+            else:
+                if not isinstance(data, str):
+                    data = str(data)
             data = html_escape(data, True).replace("'", "&#x27;")
             self.body.write(data)
 
