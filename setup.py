@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
-with open('template/__init__.py', 'rb') as f:
+with open('yatl/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1)))
 print(long_description)
@@ -25,7 +25,7 @@ setuptools.setup(
     description='Yet Another Template Language',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=['template'],
+    packages=['yatl'],
     include_package_data=True,
     zip_safe=False,
     platforms='any',
