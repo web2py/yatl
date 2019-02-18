@@ -11,11 +11,11 @@ import os
 import sys
 from functools import wraps
 from re import compile, sub, escape, DOTALL
+from . helpers import xmlescape
 
 PY2 = sys.version_info[0] == 2
 
 if PY2:
-    from cgi import escape as html_escape
     from cStringIO import StringIO
     basestring = basestring
     unicodeT = unicode
@@ -27,8 +27,7 @@ if PY2:
         return obj if isinstance(obj, str) else obj.encode(charset, errors)
 
 else:
-    from html import escape as html_escape
-    from io import StringIO, BytesIO
+    from io import StringIO
     basestring = str
     unicodeT = str
 
@@ -819,24 +818,18 @@ class DummyResponse():
 
     def write(self, data, escape=True):
         if not escape:
-            self.body.write(str(data))
+            data = str(data)
         elif hasattr(data, 'xml') and callable(data.xml):
-            if PY2:
-                self.body.write(data.xml())
-            else:
-                self.body.write(str(data))
+            data = data.xml()
         else:
-            # make it a string
-            if PY2:
-                if not isinstance(data, (str, unicodeT)):
-                    data = str(data)
-                elif isinstance(data, unicodeT):
-                    data = data.encode('utf8', 'xmlcharrefreplace')
+            if PY2 and isinstance(data, unicodeT):
+                # in python2 we always encode unicode
+                data = data.encode('utf8', 'xmlcharrefreplace')                
             else:
-                if not isinstance(data, str):
-                    data = str(data)
-            data = html_escape(data, True).replace("'", "&#x27;")
-            self.body.write(data)
+                # in python3 we always use unicode
+                data = str(data)
+            data = xmlescape(data)
+        self.body.write(str(data))
 
 
 class NOESCAPE():
@@ -1005,3 +998,4 @@ class template(object):
             else:
                 return context
         return wrapper
+

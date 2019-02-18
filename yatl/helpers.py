@@ -1,5 +1,5 @@
 import cgi
-from . sanitizer import sanitize, xmlescape
+from . sanitizer import sanitize, xmlescape, PY2
 
 try:
     # python 2
@@ -170,11 +170,9 @@ class XML(TAGGER):
 
         if sanitize:
             text = sanitize(text, permitted_tags, allowed_attributes)
-        if isinstance(text, unicode):
+        if PY2 and isinstance(text, unicode):
             text = text.encode('utf8', 'xmlcharrefreplace')
-        elif not isinstance(text, str):
-            text = str(text)
-        self.text = text
+        self.text = unicode(text)
 
     def xml(self):
         return self.text
