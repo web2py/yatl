@@ -3,33 +3,25 @@ import re
 
 import setuptools
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
-
-with open('yatl/__init__.py', 'rb') as f:
-    version = str(ast.literal_eval(_version_re.search(
-        f.read().decode('utf-8')).group(1)))
-print(long_description)
+from yatl import __version__
 
 setuptools.setup(
-    name="yatl",
-    version=version,
-    url='https://github.com/web2py/yatl',
-    license='BSD',
-    author='Massimo Di Pierro',
-    author_email='massimo.dipierro@gmail.com',
-    maintainer='Massimo Di Pierro',
-    maintainer_email='massimo.dipierro@gmail.com',
-    description='Yet Another Template Language',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    packages=['yatl'],
-    include_package_data=True,
-    zip_safe=False,
-    platforms='any',
-    classifiers=[
+    name = "yatl",
+    version = __version__,
+    url = 'https://github.com/web2py/yatl',
+    license = 'BSD',
+    author = 'Massimo Di Pierro',
+    author_email = 'massimo.dipierro@gmail.com',
+    maintainer = 'Massimo Di Pierro',
+    maintainer_email = 'massimo.dipierro@gmail.com',
+    description = 'Yet Another Template Language',
+    long_description = "This is a spin-off of the web2py template language, framework agnostic, documented in the web2py book. Includes helpers and sanitizer.",
+    long_description_content_type = "text/markdown",
+    packages = ['yatl'],
+    include_package_data = True,
+    zip_safe = False,
+    platforms = 'any',
+    classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
