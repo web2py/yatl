@@ -781,7 +781,6 @@ class TemplateParser(object):
 
 # We need this for integration with gluon
 
-
 def parse_template(filename,
                    path='views/',
                    context=None,
@@ -808,6 +807,10 @@ def parse_template(filename,
     else:
         text = filename.read()
     text = to_native(text)
+    # allow optional alternative delimiters
+    if hasattr(context.get('response', None), 'delimiters'):
+        if context['response'].delimiters is not None:
+            delimiters = context['response'].delimiters
     # Use the file contents to get a parsed template and return it.
     return str(TemplateParser(text, context=context, path=path, lexers=lexers, delimiters=delimiters, reader=reader))
 
