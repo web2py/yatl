@@ -459,13 +459,15 @@ class TemplateParser(object):
             return ''
 
         # Get the path of the file on the system.
-        filepath = self.path and os.path.join(self.path, filename) or filename
-
-        # try to read the text.
-        try:
-            text = self.reader(filepath)
-        except IOError:
-            self._raise_error('Unable to open included view file: ' + filepath)
+        if callable(self.path):
+            text = self.path(filename)
+        else:
+            filepath = self.path and os.path.join(self.path, filename) or filename
+            # try to read the text.
+            try:
+                text = self.reader(filepath)
+            except IOError:
+                self._raise_error('Unable to open included view file: ' + filepath)
         text = to_native(text)
         return text
 
@@ -791,7 +793,7 @@ def parse_template(filename,
     """
     Args:
         filename: can be a view filename in the views folder or an input stream
-        path: is the path of a views folder
+        path: is the path of a views folder of to a function to load the filename
         context: is a dictionary of symbols used to render the template
         lexers: dict of custom lexers to use
         delimiters: opening and closing tags
@@ -802,8 +804,11 @@ def parse_template(filename,
     reader = reader or file_reader
     # First, if we have a str try to open the file
     if isinstance(filename, basestring):
-        fname = os.path.join(path, filename)
-        text = file_reader(fname)
+        if callable(path):
+            text = path(filename)
+        else:
+            fname = os.path.join(path, filename)
+            text = file_reader(fname)
     else:
         text = filename.read()
     text = to_native(text)
