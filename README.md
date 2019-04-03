@@ -2,7 +2,9 @@
 
 This is the web2py template language described [here](http://web2py.com/books/default/chapter/29/05/the-views) made available as stand alone package so it can be used anywhere.
 
-Basically it is pure python within "{{" ... "}}" delimiters and blocks are terminated with "pass" if termination is not obvious. For example
+Basically it is pure Python within "{{" ... "}}" delimiters and blocks are terminated with "pass" if termination is not obvious. There is no indentation constraints.
+
+For example:
 
 ```
 from yatl import render, SPAN
@@ -18,7 +20,12 @@ example = """
 print(render(example, context=dict(num=10, SPAN=SPAN), delimiters="{{ }}"))
 ```
 
-Any python is allowed in template, including definig classes and functions:
+In the example SPAN is an optional helper.
+Output is escaped by default unless marked up with the XML helper as in {{=XML('1 < 2')}}.
+Note that the helpers included here are similar but not identical to the web2py ones.
+They are 99% compatible but the implementation is different.
+
+Any Python expressions is allowed in templates, including function and class defintions:
 
 ```
 example = """
@@ -32,10 +39,6 @@ example = """
 </ul>
 """
 
-print(render(example, context=dict(num=10, SPAN=SPAN), delimiters="{{ }}"))
+print(render(example, context=dict(num=10), delimiters="{{ }}"))
 ```
 
-In the example SPAN is an optional helper.
-Output is escaped by default unless marked up with the XML helper as in {{=XML('1 < 2')}}.
-
-Note that the helpers included here are similar but not identical to the web2py ones. They are 99% compatible but the implementation is different.
