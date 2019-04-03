@@ -9,10 +9,27 @@ from yatl import render, SPAN
 
 example = """
 <div> 
-{{for k in range(num):}}
+{{ for k in range(num): }}
 <span>{{=SPAN(k, _class='number')}} is {{if k % 2 == 0:}}even{{else:}}odd{{pass}}</span>
-{{pass}}
+{{ pass }}
 </div>
+"""
+
+print(render(example, context=dict(num=10, SPAN=SPAN), delimiters="{{ }}"))
+```
+
+Any python is allowed in template, including definig classes and functions:
+
+```
+example = """
+{{ def link(x): }}<a href="{{=x}}">{{=x}}</a>{{ pass }}
+<ul>
+  {{ for k in range(num): }}
+  <li>
+     {{= link('http://example.com/%s' % k) }}
+  </li>
+  {{ pass }}
+</ul>
 """
 
 print(render(example, context=dict(num=10, SPAN=SPAN), delimiters="{{ }}"))
