@@ -9,7 +9,7 @@ except ImportError:
     import copyreg as copy_reg
     str, unicode = bytes, str
 
-__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape']
+__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK']
 
 # ################################################################
 # New HTML Helpers
@@ -125,7 +125,9 @@ STRONG = TAG['strong']
 SELECT = TAG['select']
 OPTION = TAG['option']
 TEXTAREA = TAG['textarea']
-
+I = TAG['i']
+META = TAG['meta/']
+LINK = TAG['link/']
 
 # ################################################################
 # New XML Helpers
