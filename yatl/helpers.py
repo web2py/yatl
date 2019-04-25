@@ -84,9 +84,8 @@ class METATAG(object):
         return lambda *children, **attributes: TAGGER(name, *children, **attributes)
 
 class CAT(TAGGER):
-    def __init__(self, children):
+    def __init__(self, *children):
         self.children = children
-        self.attributes = attributes
 
     def xml(self):
         return ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s)) for s in self.children)
