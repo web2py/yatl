@@ -33,7 +33,7 @@ class TAGGER(object):
         if a:
             a = ' '+a
         if name.endswith('/'):
-            return '<%s%s/>' % (name, a)
+            return '<%s%s/>' % (name[0:-1], a)
         else:
             b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
                         for s in self.children)
