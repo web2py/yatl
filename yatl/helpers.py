@@ -9,7 +9,7 @@ except ImportError:
     import copyreg as copy_reg
     str, unicode = bytes, str
 
-__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE', 'NAV', 'MAIN', 'FOOTER', 'HTML5']
+__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE', 'NAV', 'MAIN', 'FOOTER']
 # ################################################################
 # New HTML Helpers
 # ################################################################
@@ -32,15 +32,12 @@ class TAGGER(object):
                      if k.startswith('_') and not (v is False or v is None))
         if a:
             a = ' '+a
-        doctype_html5 = ""
-        if name == "html5":
-            doctype_html5 = "<!DOCTYPE html>"
         if name.endswith('/'):
-            return '%s<%s%s/>' % (doctype_html5, name[0:-1], a)
+            return '<%s%s/>' % (name[0:-1], a)
         else:
             b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
                         for s in self.children)
-            return '%s<%s%s>%s</%s>' %(doctype_html5, name, a, b, name)
+            return '<%s%s>%s</%s>' %(name, a, b, name)
     
     def __unicode__(self):
         return self.xml()
@@ -133,7 +130,6 @@ TITLE = TAG['title']
 NAV = TAG['nav']
 MAIN = TAG['main']
 FOOTER = TAG['footer']
-HTML5 = TAG['html5']
 
 # ################################################################
 # New XML Helpers
