@@ -79,7 +79,7 @@ class TAGGER(object):
 class METATAG(object):
 
     def __getattr__(self, name):
-        return self(name)
+        return self[name]
 
     def __getitem__(self, name):
         return lambda *children, **attributes: TAGGER(name, *children, **attributes)
