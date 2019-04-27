@@ -9,7 +9,7 @@ except ImportError:
     import copyreg as copy_reg
     str, unicode = bytes, str
 
-__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE', 'NAV', 'MAIN', 'FOOTER', 'HTML5']
+__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE']
 
 # ################################################################
 # New HTML Helpers
@@ -91,21 +91,6 @@ class CAT(TAGGER):
     def xml(self):
         return ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s)) for s in self.children)
 
-class HTML5(TAGGER):
-    def __init__(self, *children, **attributes):
-        self.children = children
-        self.attributes = attributes
-    def xml(self):
-        a = ' '.join('%s="%s"' % 
-                     (k[1:], k[1:] if v is True else xmlescape(unicode(v)))
-                     for k,v in self.attributes.items() 
-                     if k.startswith('_') and not (v is False or v is None))
-        if a:
-            a = ' '+a
-        b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
-                    for s in self.children)
-        return '<!DOCTYPE html><html%s>%s</html>' %(a, b)
-
 TAG = METATAG()
 DIV = TAG['div']
 SPAN = TAG['span']
@@ -143,9 +128,6 @@ I = TAG['i']
 META = TAG['meta/']
 LINK = TAG['link/']
 TITLE = TAG['title']
-NAV = TAG['nav']
-MAIN = TAG['main']
-FOOTER = TAG['footer']
 
 # ################################################################
 # New XML Helpers
