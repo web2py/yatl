@@ -9,13 +9,13 @@ except ImportError:
     import copyreg as copy_reg
     str, unicode = bytes, str
 
-__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK']
+__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE', 'NAV', 'MAIN', 'FOOTER', 'HTML5']
 
 # ################################################################
 # New HTML Helpers
 # ################################################################
 
-class TAGGER(object):    
+class TAGGER(object):
 
     def __init__(self, name, *children, **attributes):
         self.name = name
@@ -34,7 +34,7 @@ class TAGGER(object):
         if a:
             a = ' '+a
         if name.endswith('/'):
-            return '<%s%s/>' % (name, a)
+            return '<%s%s/>' % (name[0:-1], a)
         else:
             b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
                         for s in self.children)
@@ -85,12 +85,26 @@ class METATAG(object):
         return lambda *children, **attributes: TAGGER(name, *children, **attributes)
 
 class CAT(TAGGER):
-    def __init__(self, children):
+    def __init__(self, *children):
         self.children = children
-        self.attributes = attributes
 
     def xml(self):
         return ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s)) for s in self.children)
+
+class HTML5(TAGGER):
+    def __init__(self, *children, **attributes):
+        self.children = children
+        self.attributes = attributes
+    def xml(self):
+        a = ' '.join('%s="%s"' % 
+                     (k[1:], k[1:] if v is True else xmlescape(unicode(v)))
+                     for k,v in self.attributes.items() 
+                     if k.startswith('_') and not (v is False or v is None))
+        if a:
+            a = ' '+a
+        b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
+                    for s in self.children)
+        return '<!DOCTYPE html><html%s>%s</html>' %(a, b)
 
 TAG = METATAG()
 DIV = TAG['div']
@@ -98,7 +112,7 @@ SPAN = TAG['span']
 LI = TAG['li']
 OL = TAG['ol']
 UL = TAG['ul']
-A  = TAG['a']
+A = TAG['a']
 H1 = TAG['h1']
 H2 = TAG['h2']
 H3 = TAG['h3']
@@ -128,6 +142,10 @@ TEXTAREA = TAG['textarea']
 I = TAG['i']
 META = TAG['meta/']
 LINK = TAG['link/']
+TITLE = TAG['title']
+NAV = TAG['nav']
+MAIN = TAG['main']
+FOOTER = TAG['footer']
 
 # ################################################################
 # New XML Helpers
