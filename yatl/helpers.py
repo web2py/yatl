@@ -1,5 +1,6 @@
 import cgi
-from . sanitizer import sanitize, xmlescape, PY2
+from . import sanitizer
+from . sanitizer import xmlescape, PY2
 
 try:
     # python 2
@@ -171,7 +172,7 @@ class XML(TAGGER):
         """
 
         if sanitize:
-            text = sanitize(text, permitted_tags, allowed_attributes)
+            text = sanitizer.sanitize(text, permitted_tags, allowed_attributes)
         if PY2 and isinstance(text, unicode):
             text = text.encode('utf8', 'xmlcharrefreplace')
         self.text = unicode(text)
