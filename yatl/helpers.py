@@ -16,6 +16,40 @@ __all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H
 # New HTML Helpers
 # ################################################################
 
+def _vk(k):
+    """validate atribute name of tag
+        @k: atribute name
+    """
+    ignore = ["_class",
+              "_id",
+              "_src",
+              "_style",
+              "_title",
+              "_value",
+              "_alt",
+              "_name",
+              "_content",
+              "_rel",
+              "_height",
+              "_width",
+              "_placeholder",
+              "_autocomplete",
+              "_href"]
+    i = {
+        " ": "empty space",
+        "=": "equals",
+        "'": "single quotes",
+        '"': "double quotes",
+        ">": "greater than",
+        "<": "less than",
+        "/": "division"}
+    k = k.strip()
+    if k not in ignore:
+        for c in i.keys():
+            if c in k:
+                raise ValueError("Invalid caracter (%s) in attribute name: '%s'" % (i[c], c))
+    return k
+
 class TAGGER(object):
 
     def __init__(self, name, *children, **attributes):
@@ -29,7 +63,7 @@ class TAGGER(object):
     def xml(self):
         name = self.name
         a = ' '.join('%s="%s"' % 
-                     (k[1:], k[1:] if v is True else xmlescape(unicode(v)))
+                     (_vk(k[1:]), _vk(k[1:]) if v is True else xmlescape(unicode(v)))
                      for k,v in self.attributes.items() 
                      if k.startswith('_') and not (v is False or v is None))
         if a:
