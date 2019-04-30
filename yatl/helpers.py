@@ -20,34 +20,8 @@ def _vk(k):
     """validate atribute name of tag
         @k: atribute name
     """
-    ignore = ["_class",
-              "_id",
-              "_src",
-              "_style",
-              "_title",
-              "_value",
-              "_alt",
-              "_name",
-              "_content",
-              "_rel",
-              "_height",
-              "_width",
-              "_placeholder",
-              "_autocomplete",
-              "_href"]
-    i = {
-        " ": "empty space",
-        "=": "equals",
-        "'": "single quotes",
-        '"': "double quotes",
-        ">": "greater than",
-        "<": "less than",
-        "/": "division"}
-    k = k.strip()
-    if k not in ignore:
-        for c in i.keys():
-            if c in k:
-                raise ValueError("Invalid caracter (%s) in attribute name: '%s'" % (i[c], c))
+    if len(set(" ='\"></") - set(k)) < 7:
+        raise ValueError("Invalid caracter in attribute name")
     return k
 
 class TAGGER(object):
