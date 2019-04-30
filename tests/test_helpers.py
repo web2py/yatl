@@ -19,7 +19,7 @@ class TestHelpers(unittest.TestCase):
             DIV(_class="my_class", _mytrueattr=True).xml(),
             "<div class=\"my_class\" mytrueattr=\"mytrueattr\"></div>")
         self.assertEqual(
-            DIV(_id="my_id", _none=None, _false=False, whitout_underline="serius?").xml(),
+            DIV(_id="my_id", _none=None, _false=False, without_underline="serius?").xml(),
             "<div id=\"my_id\"></div>")
         self.assertEqual(
             DIV("<b>xmlscapedthis</b>").xml(), "<div>&lt;b&gt;xmlscapedthis&lt;/b&gt;</div>")
