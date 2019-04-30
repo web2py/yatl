@@ -21,7 +21,7 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(
             DIV(XML("<b>don'txmlscapedthis</b>")).xml(), "<div><b>don'txmlscapedthis</b></div>")
 
-    def invalid_atribute_name(self):
+    def test_invalid_atribute_name(self):
         i = [" ", "=", "'", '"', ">", "<", "/"]
         for x in i:
             DIV = TAG.div
