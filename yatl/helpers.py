@@ -86,7 +86,12 @@ class TAGGER(object):
         raise NotImplementedError
 
 class METATAG(object):
+    __all_tags__ = set()
 
+    @classmethod
+    def _add_tag(cls, name):
+        cls.__all_tags__.add(name)
+ 
     def __getattr__(self, name):
         return self[name]
 
