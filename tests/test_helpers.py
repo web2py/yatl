@@ -34,6 +34,71 @@ class TestHelpers(unittest.TestCase):
             attr = {b: "invalid_atribute_name"}
             self.assertRaises(ValueError, DIV("any content", **attr).xml)
 
+    def test_sanitize(self):
+        permitted_tags=[
+            'div',
+            'td',
+            'b',
+            'br/',
+            'strong',
+            'span',
+            'img/',
+            'a',
+        ]
+        allowed_attributes={
+            'a': ['href', 'title'],
+            'img': ['src', 'alt'],
+            'blockquote': ['type'],
+            'td': ['colspan'],
+        }
+        # test permitted
+        for x in permitted_tags:
+            T = TAG[x]
+            s_tag = T().xml()
+            if x == "img/": # alt attribute is required 
+                s_tag = T(_alt="empty").xml()
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
+                    "<img alt=\"empty\" />")
+            elif x == "a": # It has to have a valid href
+                s_tag = T("link", _href="http://web2py.com/").xml()
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
+                    "<a href=\"http://web2py.com/\">link</a>")
+            else:
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=permitted_tags, allowed_attributes=allowed_attributes).xml(), "<%s></%s>" %
+                    (x, x) if not x[-1] == "/" else "<%s>" % (x.replace("/", " /")))                
+        
+        # test tag out of list
+        out_of_list = [
+            'blockquote', 'i', 'li', 'ol', 'ul', 'p', 'cite', 'code', 'pre',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'table', 'tbody', 'thead', 'tfoot', 'tr'
+            'strong']
+        for x in out_of_list:
+            T = TAG[x]
+            self.assertEqual(XML(T().xml(), sanitize=True, permitted_tags=permitted_tags, allowed_attributes=allowed_attributes).xml(), "&lt;%s&gt;&lt;/%s&gt;" %
+                (x, x))
+        # test unusual tags
+        for x in ["evil", "n0c1v3"]:
+            T = TAG[x]
+            self.assertEqual(XML(T().xml(), sanitize=True, permitted_tags=permitted_tags, allowed_attributes=allowed_attributes).xml(), "&lt;%s&gt;&lt;/%s&gt;" %
+                (x, x))
+        # test allowed_attributes
+        s_tag = TAG['td']("content_td", _colspan="2", _extra_attr="invalid").xml()
+        self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['td'], allowed_attributes={'td': ['colspan']}).xml(),
+            '<td colspan="2">content_td</td>')
+        s_tag = TAG['a']("link", _href="http://web2py.com/", _title="my_title").xml()
+        self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
+            '<a href="http://web2py.com/" title="my_title">link</a>')
+        s_tag = TAG['img/'](_alt="empty", _src="/images/logo.png").xml()
+        self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
+            '<img src="/images/logo.png" alt="empty" />')
+        s_tag = TAG['div']("content", _style="{backgrond-color: red;}").xml()
+        self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
+            '<div style="{backgrond-color: red;}">content</div>')
+        # valid inside invalid
+        s_tag = TAG['evil'](TAG['div']('valid'), _style="{backgrond-color: red;}").xml()
+        self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
+            '&lt;evil&gt;<div>valid</div>&lt;/evil&gt;')
 
 if __name__ == '__main__':
     unittest.main()
