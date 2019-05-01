@@ -16,12 +16,15 @@ __all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H
 # New HTML Helpers
 # ################################################################
 
+INVALID_CHARS = set(" ='\"></")
+
 def _vk(k):
     """validate atribute name of tag
         @k: atribute name
     """
-    if len(set(" ='\"></") - set(k)) < 7:
-        raise ValueError("Invalid caracter in attribute name")
+    invalid_chars = set(k) & INVALID_CHARS
+    if invalid_chars:
+        raise ValueError("Invalid caracters %s in attribute name" % list(invalid_chars))
     return k
 
 class TAGGER(object):
