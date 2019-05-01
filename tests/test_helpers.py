@@ -104,10 +104,21 @@ class TestHelpers(unittest.TestCase):
         s_tag = TAG['div']("content", _style="{backgrond-color: red;}").xml()
         self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
             '<div style="{backgrond-color: red;}">content</div>')
+        self.assertEqual(XML(TAG['a']("oh no!", _href="invalid_link").xml(), sanitize=True, permitted_tags=['a']).xml(), 'oh no!')
+        self.assertEqual(XML(TAG['div']("", _onclick="evil()").xml(), sanitize=True, permitted_tags=['div']).xml(), '<div></div>')
+
         # valid inside invalid
         s_tag = TAG['evil'](TAG['div']('valid'), _style="{backgrond-color: red;}").xml()
         self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
             '&lt;evil&gt;<div>valid</div>&lt;/evil&gt;')
+        self.assertEqual(XML(TAG['a'](TAG['img/'](_src="/index.html"), _class="teste").xml(), sanitize=True, permitted_tags=['a', 'img/']).xml(), '<img src="/index.html" />')
+
+        # tags deleted even allowed
+        self.assertEqual(XML(TAG['img/']().xml(), sanitize=True, permitted_tags=['img']).xml(), "")
+        self.assertEqual(XML(TAG['img/'](_src="invalid_url").xml(), sanitize=True, permitted_tags=['img']).xml(), "")
+        self.assertEqual(XML(TAG['img/'](_class="teste").xml(), sanitize=True, permitted_tags=['img']).xml(), "")
+        self.assertEqual(XML(TAG['a'](_href="invalid_link").xml(), sanitize=True, permitted_tags=['a']).xml(), "")
+
 
 if __name__ == '__main__':
     unittest.main()
