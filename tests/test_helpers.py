@@ -55,14 +55,23 @@ class TestHelpers(unittest.TestCase):
         for x in permitted_tags:
             T = TAG[x]
             s_tag = T().xml()
-            if x == "img/": # alt attribute is required 
+            if x == "img/": # alt or src attribute is required. src has to have a valid href
                 s_tag = T(_alt="empty").xml()
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
                     "<img alt=\"empty\" />")
-            elif x == "a": # It has to have a valid href
-                s_tag = T("link", _href="http://web2py.com/").xml()
+                s_tag = T(_src="/image.png").xml()
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
+                    "<img src=\"/image.png\" />")
+            elif x == "a": # It has to have a valid href or title or not tag empty 
+                s_tag = T("this is a link", _href="http://web2py.com/").xml()
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
-                    "<a href=\"http://web2py.com/\">link</a>")
+                    "<a href=\"http://web2py.com/\">this is a link</a>")
+                s_tag = T("without href", _title="this is a link?").xml()
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
+                    '<a title="this is a link?">without href</a>')
+                s_tag = T(_title="empty_tag").xml()
+                self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
+                    '<a title="empty_tag"></a>')
             else:
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=permitted_tags, allowed_attributes=allowed_attributes).xml(), "<%s></%s>" %
                     (x, x) if not x[-1] == "/" else "<%s>" % (x.replace("/", " /")))                
