@@ -116,6 +116,7 @@ OL = TAG.ol
 UL = TAG.ul
 I = TAG.i
 A = TAG.a
+P = TAG.p
 H1 = TAG.h1
 H2 = TAG.h2
 H3 = TAG.h3
@@ -138,7 +139,6 @@ TBODY = TAG.tbody
 LABEL = TAG.label
 STRONG = TAG.strong
 SELECT = TAG.select
-P = TAG.p
 OPTION = TAG.option
 TEXTAREA = TAG.textarea
 TITLE = TAG.title
@@ -223,7 +223,7 @@ class XML(TAGGER):
             yield c
 
     def __len__(self):
-        return len(str(self))
+        return len(self.text)
 
 def XML_unpickle(data):
     return XML(marshal.loads(data))
