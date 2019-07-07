@@ -3,7 +3,7 @@
 
 """
 | This file was extracted from the web2py Web Framework and made framework independent
-| License: LGPLv3 (http://www.gnu.org/licenses/lgpl.html)
+| License: BSD
 """
 
 import logging
