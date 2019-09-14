@@ -42,3 +42,19 @@ example = """
 print(render(example, context=dict(num=10), delimiters="{{ }}"))
 ```
 
+## Caching
+
+If you implement a caching reader as the one below, you mak yatl even faster:
+
+```
+CACHE = {}
+def reader(filename):
+    if filename in CACHE:
+        return CACHE[filename]
+    with open(filename) as fp;
+        CACHE[filename] = content = fp.read()
+    return content
+      
+output = yatl.render(reader(filename), path=path, reader=reader)
+```
+
