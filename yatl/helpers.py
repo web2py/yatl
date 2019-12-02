@@ -5,10 +5,12 @@ from . sanitizer import xmlescape, PY2
 try:
     # python 2
     import copy_reg
+    IS_PYTHON2 = True
 except ImportError:
     # python 3
     import copyreg as copy_reg
     str, unicode = bytes, str
+    IS_PYTHON2 = False
 
 __all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'P', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE']
 
@@ -56,7 +58,12 @@ class TAGGER(object):
         return self.xml()
 
     def __str__(self):
-        return self.xml().encode('utf8')
+        data = self.xml()
+        if IS_PYTHON2 and isinstance(data, unicode):
+            data = data.encode('utf8')
+        elif not IS_PYTHON2 and isinstance(data, bytes):
+            data = data.decode('utf8')
+        return data
 
     def __getitem__(self, key):
         if isinstance(key, int):
