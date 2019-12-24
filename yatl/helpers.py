@@ -5,12 +5,10 @@ from . sanitizer import xmlescape, PY2
 try:
     # python 2
     import copy_reg
-    IS_PYTHON2 = True
 except ImportError:
     # python 3
     import copyreg as copy_reg
     str, unicode = bytes, str
-    IS_PYTHON2 = False
 
 __all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'P', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE']
 
@@ -50,7 +48,7 @@ class TAGGER(object):
         if name.endswith('/'):
             return '<%s%s/>' % (name[0:-1], a)
         else:
-            b = ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s))
+            b = ''.join(s.xml() if is_helper(s) else xmlescape(unicode(s))
                         for s in self.children)
             return '<%s%s>%s</%s>' %(name, a, b, name)
     
@@ -59,9 +57,9 @@ class TAGGER(object):
 
     def __str__(self):
         data = self.xml()
-        if IS_PYTHON2 and isinstance(data, unicode):
+        if PY2 and isinstance(data, unicode):
             data = data.encode('utf8')
-        elif not IS_PYTHON2 and isinstance(data, bytes):
+        elif not PY2 and isinstance(data, bytes):
             data = data.decode('utf8')
         return data
 
@@ -199,10 +197,12 @@ class XML(TAGGER):
             text = sanitizer.sanitize(text, permitted_tags, allowed_attributes)
         if PY2 and isinstance(text, unicode):
             text = text.encode('utf8', 'xmlcharrefreplace')
-        self.text = unicode(text)
-
+        elif not PY2 and isinstance(text, bytes):
+            text = text.decode('utf8')
+        self.text = text
+        
     def xml(self):
-        return self.text
+        return unicode(self.text)
 
     def __str__(self):
         return self.text
@@ -232,6 +232,9 @@ class XML(TAGGER):
     def __len__(self):
         return len(self.text)
 
+def is_helper(helper):
+    return hasattr(helper, 'xml') and callable(helper.xml)
+
 def XML_unpickle(data):
     return XML(marshal.loads(data))
 
@@ -244,11 +247,13 @@ copy_reg.pickle(XML, XML_pickle, XML_unpickle)
 # ################################################################
 
 def BEAUTIFY(obj): # FIX ME, dealing with very large objects
-    if isinstance(obj, TAGGER):
+    if is_helper(obj):
         return obj
     elif isinstance(obj, list):
         return UL(*[LI(BEAUTIFY(item)) for item in  obj])
     elif isinstance(obj, dict):
-        return TABLE(TBODY(*[TR(TH(XML(key)),TD(BEAUTIFY(value))) for key, value in obj.items()]))
-    else:
+        return TABLE(TBODY(*[TR(TH(key),TD(BEAUTIFY(value))) for key, value in obj.items()]))
+    elif isinstance(obj, (str, unicode)):
         return XML(obj)
+    else:
+        return repr(obj)
