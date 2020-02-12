@@ -65,7 +65,10 @@ class XssCleaner(HTMLParser):
         strip_disallowed=False
     ):
 
-        HTMLParser.__init__(self)
+        if PY2:
+            HTMLParser.__init__(self)
+        else:
+            HTMLParser.__init__(self, convert_charrefs=False)
         self.result = ''
         self.open_tags = []
         self.permitted_tags = [i for i in permitted_tags if i[-1] != '/']
