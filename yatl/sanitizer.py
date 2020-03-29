@@ -30,7 +30,7 @@ else:
     from html.entities import entitydefs, name2codepoint
     basestring = str
 
-def xmlescape(text, quote=True, colon=True):
+def xmlescape(text, quote=True, colon=False):
     if not isinstance(text, basestring):
         text = str(text)
     data = escape(text, quote)
@@ -60,17 +60,21 @@ class XssCleaner(HTMLParser):
             'pre',
             'img/',
         ],
-        allowed_attributes={'a': ['href', 'title'], 'img': ['src', 'alt'
-                                                            ], 'blockquote': ['type']},
+        allowed_attributes = {
+            'a': ['href', 'title'], 
+            'img': ['src', 'alt'], 
+            'blockquote': ['type']
+            },
         strip_disallowed=False
-    ):
+        ):
 
         HTMLParser.__init__(self)
         self.result = ''
         self.open_tags = []
         self.permitted_tags = [i for i in permitted_tags if i[-1] != '/']
-        self.requires_no_close = [i[:-1] for i in permitted_tags
-                                  if i[-1] == '/']
+        self.requires_no_close = [
+            i[:-1] for i in permitted_tags
+            if i[-1] == '/']
         self.permitted_tags += self.requires_no_close
         self.allowed_attributes = allowed_attributes
 
@@ -124,9 +128,10 @@ class XssCleaner(HTMLParser):
             bt = '<' + tag
             if tag in self.allowed_attributes:
                 attrs = dict(attrs)
-                self.allowed_attributes_here = [x for x in
-                                                self.allowed_attributes[tag] if x in attrs
-                                                and len(attrs[x]) > 0]
+                self.allowed_attributes_here = [
+                    x for x in
+                    self.allowed_attributes[tag] if x in attrs
+                    and len(attrs[x]) > 0]
                 for attribute in self.allowed_attributes_here:
                     if attribute in ['href', 'src', 'background']:
                         if self.url_is_acceptable(attrs[attribute]):
@@ -139,10 +144,11 @@ class XssCleaner(HTMLParser):
             if bt == '<a' or bt == '<img':
                 return
             if tag in self.requires_no_close:
-                bt += ' /'
+                bt += '/'
             bt += '>'
             self.result += bt
-            if tag not in self.requires_no_close: self.open_tags.insert(0, tag)
+            if tag not in self.requires_no_close:
+                self.open_tags.insert(0, tag)
 
     def handle_endtag(self, tag):
         bracketed = '</%s>' % tag
@@ -177,10 +183,10 @@ class XssCleaner(HTMLParser):
           content, otherwise remove it
         """
 
-        if not isinstance(rawstring, str):
+        if not isinstance(rawstring, basestring):
             return str(rawstring)
         for tag in self.requires_no_close:
-            rawstring = rawstring.replace("<%s/>" % tag, "<%s />" % tag)
+            rawstring = rawstring.replace("<%s />" % tag, "<%s/>" % tag)
         if not escape:
             self.strip_disallowed = True
         self.result = ''

@@ -1,4 +1,4 @@
-from yatl.helpers import TAG, XML
+from yatl.helpers import TAG, XML, DIV
 import unittest
 
 
@@ -34,6 +34,13 @@ class TestHelpers(unittest.TestCase):
             attr = {b: "invalid_atribute_name"}
             self.assertRaises(ValueError, DIV("any content", **attr).xml)
 
+    def test_amend(self):
+        div = DIV('hello', _class='myclass')
+        div = div.amend('hello world', _id='myid')
+        self.assertEqual(
+            div.xml(),
+            '<div class="myclass" id="myid">hello world</div>')
+
     def test_sanitize(self):
         permitted_tags=[
             'div',
@@ -58,10 +65,10 @@ class TestHelpers(unittest.TestCase):
             if x == "img/": # alt or src attribute is required. src has to have a valid href
                 s_tag = T(_alt="empty").xml()
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
-                    "<img alt=\"empty\" />")
+                    "<img alt=\"empty\"/>")
                 s_tag = T(_src="/image.png").xml()
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
-                    "<img src=\"/image.png\" />")
+                    "<img src=\"/image.png\"/>")
             elif x == "a": # It has to have a valid href or title or not tag empty 
                 s_tag = T("this is a link", _href="http://web2py.com/").xml()
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['a'], allowed_attributes={'a': ['href', 'title']}).xml(),
@@ -74,7 +81,7 @@ class TestHelpers(unittest.TestCase):
                     '<a title="empty_tag"></a>')
             else:
                 self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=permitted_tags, allowed_attributes=allowed_attributes).xml(), "<%s></%s>" %
-                    (x, x) if not x[-1] == "/" else "<%s>" % (x.replace("/", " /")))                
+                    (x, x) if not x[-1] == "/" else "<%s>" % x)
         
         # test tag out of list
         out_of_list = [
@@ -100,7 +107,7 @@ class TestHelpers(unittest.TestCase):
             '<a href="http://web2py.com/" title="my_title">link</a>')
         s_tag = TAG['img/'](_alt="empty", _src="/images/logo.png").xml()
         self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['img/'], allowed_attributes={'img': ['src', 'alt']}).xml(),
-            '<img src="/images/logo.png" alt="empty" />')
+            '<img src="/images/logo.png" alt="empty"/>')
         s_tag = TAG['div']("content", _style="{backgrond-color: red;}").xml()
         self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
             '<div style="{backgrond-color: red;}">content</div>')
@@ -111,7 +118,7 @@ class TestHelpers(unittest.TestCase):
         s_tag = TAG['evil'](TAG['div']('valid'), _style="{backgrond-color: red;}").xml()
         self.assertEqual(XML(s_tag, sanitize=True, permitted_tags=['div'], allowed_attributes={'div': ['style']}).xml(),
             '&lt;evil&gt;<div>valid</div>&lt;/evil&gt;')
-        self.assertEqual(XML(TAG['a'](TAG['img/'](_src="/index.html"), _class="teste").xml(), sanitize=True, permitted_tags=['a', 'img/']).xml(), '<img src="/index.html" />')
+        self.assertEqual(XML(TAG['a'](TAG['img/'](_src="/index.html"), _class="teste").xml(), sanitize=True, permitted_tags=['a', 'img/']).xml(), '<img src="/index.html"/>')
 
         # tags deleted even allowed
         self.assertEqual(XML(TAG['img/']().xml(), sanitize=True, permitted_tags=['img']).xml(), "")

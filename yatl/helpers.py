@@ -1,4 +1,5 @@
 import cgi
+import copy
 from . import sanitizer
 from . sanitizer import xmlescape, PY2
 
@@ -12,11 +13,12 @@ except ImportError:
 
 __all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'P', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE']
 
+INVALID_CHARS = set(" ='\"></")
+
+
 # ################################################################
 # New HTML Helpers
 # ################################################################
-
-INVALID_CHARS = set(" ='\"></")
 
 def _vk(k):
     """validate atribute name of tag
@@ -26,6 +28,7 @@ def _vk(k):
     if invalid_chars:
         raise ValueError("Invalid caracters %s in attribute name" % list(invalid_chars))
     return k
+
 
 class TAGGER(object):
 
@@ -39,18 +42,26 @@ class TAGGER(object):
 
     def xml(self):
         name = self.name
-        a = ' '.join('%s="%s"' % 
-                     (_vk(k[1:]), _vk(k[1:]) if v is True else xmlescape(unicode(v)))
-                     for k,v in self.attributes.items() 
-                     if k.startswith('_') and not (v is False or v is None))
-        if a:
-            a = ' '+a
+        parts = []
+        for key in sorted(self.attributes):
+            value = self.attributes[key]
+            if key.startswith('_') and not (value is False or value is None):
+                if value is True:
+                    value = _vk(key[1:])
+                else:
+                    value = xmlescape(unicode(value))
+                parts.append('%s="%s"' % (_vk(key[1:]), value))
+        joined = ' '.join(parts)
+        if joined:
+            joined = ' '+joined
         if name.endswith('/'):
-            return '<%s%s/>' % (name[0:-1], a)
+            return '<%s%s/>' % (name[0:-1], joined)
         else:
-            b = ''.join(s.xml() if is_helper(s) else xmlescape(unicode(s))
-                        for s in self.children)
-            return '<%s%s>%s</%s>' %(name, a, b, name)
+            content = ''.join(
+                s.xml() if is_helper(s) 
+                else xmlescape(unicode(s))
+                for s in self.children)
+            return '<%s%s>%s</%s>' %(name, joined, content, name)
     
     def __unicode__(self):
         return self.xml()
@@ -93,7 +104,15 @@ class TAGGER(object):
     def find(self, query):
         raise NotImplementedError
 
+    def amend(self, *children, **attributes):
+        new_children = list(children) if children else copy.copy(self.children)
+        new_attributes = copy.copy(self.attributes)
+        new_attributes.update(**attributes)
+        return TAGGER(self.name, *new_children, **new_attributes)
+
+
 class METATAG(object):
+
     __all_tags__ = set()
 
     @classmethod
@@ -112,6 +131,7 @@ class CAT(TAGGER):
 
     def xml(self):
         return ''.join(s.xml() if isinstance(s,TAGGER) else xmlescape(unicode(s)) for s in self.children)
+
 
 TAG = METATAG()
 DIV = TAG.div
@@ -151,6 +171,7 @@ IMG = TAG['img/']
 INPUT = TAG['input/']
 META = TAG['meta/']
 LINK = TAG['link/']
+
 
 # ################################################################
 # New XML Helpers
@@ -200,7 +221,7 @@ class XML(TAGGER):
         elif not PY2 and isinstance(text, bytes):
             text = text.decode('utf8')
         self.text = text
-        
+
     def xml(self):
         return unicode(self.text)
 
@@ -232,6 +253,7 @@ class XML(TAGGER):
     def __len__(self):
         return len(self.text)
 
+
 def is_helper(helper):
     return hasattr(helper, 'xml') and callable(helper.xml)
 
@@ -241,6 +263,7 @@ def XML_unpickle(data):
 def XML_pickle(data):
     return XML_unpickle, (marshal.dumps(str(data)),)
 copy_reg.pickle(XML, XML_pickle, XML_unpickle)
+
 
 # ################################################################
 # BEAUTIFY everything
