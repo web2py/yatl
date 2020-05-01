@@ -11,7 +11,13 @@ except ImportError:
     import copyreg as copy_reg
     str, unicode = bytes, str
 
-__all__ = ['A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'P', 'PRE', 'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'TBODY', 'TD', 'TEXTAREA', 'TH', 'THAED', 'TR', 'UL', 'XML', 'xmlescape', 'I', 'META', 'LINK', 'TITLE']
+__all__ = [
+    'A', 'BEAUTIFY', 'BODY', 'CAT', 'CODE', 'DIV', 'EM', 'FORM', 
+    'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEAD', 'HTML', 'IMG', 
+    'INPUT', 'LABEL', 'LI', 'METATAG', 'OL', 'OPTION', 'P', 'PRE', 
+    'SELECT', 'SPAN', 'STRONG', 'TABLE', 'TAG', 'TAGGER', 'THEAD', 
+    'TBODY', 'TD', 'TEXTAREA', 'TH', 'TT', 'TR', 'UL', 'XML', 
+    'xmlescape', 'I', 'META', 'LINK', 'TITLE', 'STYLE', 'SCRIPT']
 
 INVALID_CHARS = set(" ='\"></")
 
@@ -152,6 +158,7 @@ EM = TAG.em
 TR = TAG.tr
 TD = TAG.td
 TH = TAG.th
+TT = TAG.tt
 PRE = TAG.pre
 CODE = TAG.code
 FORM = TAG.form
@@ -162,6 +169,8 @@ TABLE = TAG.table
 THAED = TAG.thead
 TBODY = TAG.tbody
 LABEL = TAG.label
+SCRIPT = TAG.script
+STYLE = TAG.style
 STRONG = TAG.strong
 SELECT = TAG.select
 OPTION = TAG.option
