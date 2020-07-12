@@ -169,7 +169,6 @@ TABLE = TAG.table
 THEAD = TAG.thead
 TBODY = TAG.tbody
 LABEL = TAG.label
-SCRIPT = TAG.script
 STYLE = TAG.style
 STRONG = TAG.strong
 SELECT = TAG.select
@@ -180,6 +179,7 @@ IMG = TAG['img/']
 INPUT = TAG['input/']
 META = TAG['meta/']
 LINK = TAG['link/']
+SCRIPT = lambda body, **attr: TAG.script(XML(body), **attr)
 
 
 # ################################################################
