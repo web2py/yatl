@@ -1,4 +1,4 @@
-from yatl.helpers import TAG, XML, DIV
+from yatl.helpers import TAG, XML, DIV, SPAN
 import unittest
 
 
@@ -126,6 +126,17 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(XML(TAG['img/'](_class="teste").xml(), sanitize=True, permitted_tags=['img']).xml(), "")
         self.assertEqual(XML(TAG['a'](_href="invalid_link").xml(), sanitize=True, permitted_tags=['a']).xml(), "")
 
+    def test_find(self):
+        a = DIV('A', _class='a')
+        b = SPAN('B', _id='b')
+        div = DIV(DIV(a), DIV(b))
+        self.assertEqual(div.find('.a')[0], a)
+        self.assertEqual(div.find('#b')[0], b)
+        self.assertEqual(div.find('div.a')[0], a)
+        self.assertEqual(div.find('span#b')[0], b)
+        self.assertEqual(div.find('span')[0], b)
+        self.assertEqual(len(div.find('div')), 4)
+        self.assertEqual(len(div.find('abc')), 0)
 
 if __name__ == '__main__':
     unittest.main()
