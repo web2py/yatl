@@ -159,10 +159,10 @@ class TAGGER(object):
         new_attributes.update(**attributes)
         return TAGGER(self.name, *new_children, **new_attributes)
 
-    regex_tag = re.compile("^[\w\-\:]+")
-    regex_id = re.compile("#([\w\-]+)")
-    regex_class = re.compile("\.([\w\-]+)")
-    regex_attr = re.compile("\[([\w\-\:]+)=(.*?)\]")
+    regex_tag = re.compile(r"^[\w:-]+")
+    regex_id = re.compile(r"#([\w-]+)")
+    regex_class = re.compile(r"\.([\w-]+)")
+    regex_attr = re.compile(r"\[([\w:-]+)=(.*?)\]")
 
     def find(self, query=None, **kargs):
         """
@@ -270,7 +270,7 @@ class TAGGER(object):
                     kargs["_id"] = match_id.group(1)
                 if match_class:
                     kargs["_class"] = re.compile(
-                        "(?<!\w)%s(?!\w)"
+                        r"(?<!\w)%s(?!\w)"
                         % match_class.group(1)
                         .replace("-", "\\-")
                         .replace(":", "\\:")
