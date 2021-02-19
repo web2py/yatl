@@ -185,7 +185,7 @@ class TAGGER(object):
 
         Examples:
 
-        >>> a=TAG('<div><span><a id="1-1" u:v=$>hello</a></span><p class="this is a test">world</p></div>')
+        >>> a=DIV(SPAN(A('hello', **{'_id': '1-1', '_u:v': '$'})), P('world', _class='this is a test'))
         >>> for e in a.find('div a#1-1, p.is'): print(e.flatten())
         hello
         world
@@ -272,8 +272,8 @@ class TAGGER(object):
                     kargs["_class"] = re.compile(
                         r"(?<!\w)%s(?!\w)"
                         % match_class.group(1)
-                        .replace("-", "\\-")
-                        .replace(":", "\\:")
+                        .replace("-", r"\-")
+                        .replace(":", r"\:")
                     )
                 for item in match_attr:
                     kargs["_" + item.group(1)] = item.group(2)
