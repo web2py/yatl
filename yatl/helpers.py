@@ -1,6 +1,5 @@
 import cgi
 import copy
-import functools
 import re
 import marshal
 from . import sanitizer
@@ -257,12 +256,19 @@ class TAGGER(object):
         <div><div><span class="abc">x</span><div><span class="efg">hello</span><span class="abc">z</span></div></div></div>
         """
         if query is not None:
+            sub = []
+            if "," in query:
+                # jQuery multiple selector ("selector1, selector2, selectorN")
+                for subquery in query.split(","):
+                    sub.extend(self.find(subquery, **kargs))
+                return sub
             items = query.split()
             if len(items) > 1:
-                subset = [
-                    a.find(" ".join(items[1:]), **kargs) for a in self.find(items[0])
-                ]
-                return functools.reduce(lambda a, b: a + b, subset, [])
+                # jQuery Descendant Selector ("ancestor descendant")
+                subquery = " ".join(items[1:])
+                for a in self.find(items[0]):
+                    sub.extend(a.find(subquery, **kargs))
+                return sub
             item = items[0]
             if "#" in item or "." in item or "[" in item:
                 match_tag = self.regex_tag.search(item)
@@ -273,8 +279,10 @@ class TAGGER(object):
                 if match_tag:
                     args = [match_tag.group()]
                 if match_id:
+                    # jQuery ID Selector ("#id")
                     kargs["_id"] = match_id.group(1)
                 if match_class:
+                    # jQuery Class Selector (".class")
                     kargs["_class"] = re.compile(
                         r"(?<!\w)%s(?!\w)"
                         % match_class.group(1)
@@ -282,6 +290,7 @@ class TAGGER(object):
                         .replace(":", r"\:")
                     )
                 for item in match_attr:
+                    # jQuery Attribute Equals Selector ("[name=value]")
                     kargs["_" + item.group(1)] = item.group(2)
                 return self.find(*args, **kargs)
         # make a copy of the components
@@ -291,7 +300,7 @@ class TAGGER(object):
         tag = self.name.replace("/", "")
         check = not (query and tag not in query)
         for (key, value) in kargs.items():
-            if key not in ["first_only", "replace", "text"]:
+            if key not in ("first_only", "find", "text", "replace"):
                 if isinstance(value, (str, int)):
                     if str(self[key]) != str(value):
                         check = False
