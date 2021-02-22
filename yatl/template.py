@@ -17,7 +17,6 @@ PY2 = sys.version_info[0] == 2
 
 if PY2:
     from cStringIO import StringIO
-    basestring = basestring
     unicodeT = unicode
 
     def to_bytes(obj, charset='utf-8', errors='strict'):

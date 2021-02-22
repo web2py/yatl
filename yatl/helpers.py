@@ -6,14 +6,14 @@ import marshal
 from . import sanitizer
 from .sanitizer import xmlescape, PY2
 
-try:
+if PY2:
     # python 2
     import copy_reg
-except ImportError:
+else:
     # python 3
     import copyreg as copy_reg
 
-    str, unicode = bytes, str
+    unicode = basestring = str
 
 __all__ = [
     "A",
@@ -115,16 +115,22 @@ class TAGGER(object):
             )
             return "<%s%s>%s</%s>" % (name, joined, content, name)
 
-    def __unicode__(self):
-        return self.xml()
+    if PY2:
+        def __unicode__(self):
+            return self.xml()
 
-    def __str__(self):
-        data = self.xml()
-        if PY2 and isinstance(data, unicode):
-            data = data.encode("utf8")
-        elif not PY2 and isinstance(data, bytes):
-            data = data.decode("utf8")
-        return data
+        def __str__(self):
+            data = self.xml()
+            if isinstance(data, unicode):
+                data = data.encode("utf8")
+            return data
+
+    else:
+        def __str__(self):
+            data = self.xml()
+            if isinstance(data, bytes):
+                data = data.decode("utf8")
+            return data
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -488,8 +494,12 @@ class XML(TAGGER):
             text = text.decode("utf8")
         self.text = text
 
-    def xml(self):
-        return unicode(self.text)
+    if PY2:
+        def xml(self):
+            return unicode(self.text, "utf8")
+    else:
+        def xml(self):
+            return self.text
 
     def __str__(self):
         return self.text
@@ -550,7 +560,7 @@ def BEAUTIFY(obj):  # FIX ME, dealing with very large objects
         return TABLE(
             TBODY(*[TR(TH(key), TD(BEAUTIFY(value))) for key, value in obj.items()])
         )
-    elif isinstance(obj, (str, unicode)):
+    elif isinstance(obj, basestring):
         return XML(obj)
     else:
         return repr(obj)

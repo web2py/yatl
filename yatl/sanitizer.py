@@ -22,7 +22,6 @@ if PY2:
     from HTMLParser import HTMLParser
     import urlparse
     from htmlentitydefs import entitydefs, name2codepoint
-    basestring = basestring    
 else:
     from html import escape
     from html.parser import HTMLParser
