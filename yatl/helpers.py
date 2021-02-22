@@ -190,18 +190,21 @@ class TAGGER(object):
 
         Examples:
 
-        >>> a=DIV(SPAN(A('hello', **{'_id': '1-1', '_u:v': '$'})), P('world', _class='this is a test'))
-        >>> for e in a.find('div a#1-1, p.is'): print(e.flatten())
-        hello
-        world
-        >>> for e in a.find('#1-1'): print(e.flatten())
-        hello
+        >>> a = DIV(SPAN(A('hello', **{'_id': '1-1', '_u:v': '$'})), P('world', _class='this is a test'))
+        >>> for e in a.find('div a#1-1, p.is'): print(e)
+        <a id="1-1" u:v="$">hello</a>
+        <p class="this is a test">world</p>
+        >>> for e in a.find('#1-1'): print(e)
+        <a id="1-1" u:v="$">hello</a>
         >>> a.find('a[u:v=$]')[0].xml()
         '<a id="1-1" u:v="$">hello</a>'
-        >>> a=FORM( INPUT(_type='text'), SELECT(list(range(1))), TEXTAREA() )
-        >>> for c in a.find('input, select, textarea'): c['_disabled'] = 'disabled'
+        >>> a = FORM(INPUT(_type='text'),SELECT(OPTION(0)),TEXTAREA())
+        >>> for c in a.find('input, select, textarea'): c['_disabled'] = False
         >>> a.xml()
-        '<form action="#" enctype="multipart/form-data" method="post"><input disabled="disabled" type="text" /><select disabled="disabled"><option value="0">0</option></select><textarea cols="40" disabled="disabled" rows="10"></textarea></form>'
+        '<form><input disabled="disabled" type="text"/><select disabled="disabled"><option>0</option></select><textarea disabled="disabled"></textarea></form>'
+        >>> for c in a.find('input, select, textarea'): c['_disabled'] = False
+        >>> a.xml()
+        '<form><input type="text"/><select><option>0</option></select><textarea></textarea></form>'
 
         Elements that are matched can also be replaced or removed by specifying
         a "replace" argument (note, a list of the original matching elements
@@ -231,11 +234,14 @@ class TAGGER(object):
         >>> a = DIV(DIV(SPAN('x', _class='abc'), DIV(SPAN('y', _class='abc'), SPAN('z', _class='abc'))))
         >>> b = a.find('span', text='y', replace=None)
         >>> print(a)
-        <div><div><span class="abc">x</span><div><span class="abc">z</span></div></div></div>
+        <div><div><span class="abc">x</span><div><span class="abc"></span><span class="abc">z</span></div></div></div>
 
         If a "text" argument is specified, elements will be searched for text
         components that match text, and any matching text components will be
         replaced (text is ignored if "replace" is not also specified).
+        replaced ("text" is ignored if "replace" is not also specified, use
+        a "find" argument when you only need searching for textual elements).
+
         Like the "find" argument, "text" can be a string or a compiled regex.
 
         Examples:
