@@ -17,7 +17,6 @@ PY2 = sys.version_info[0] == 2
 
 if PY2:
     from cStringIO import StringIO
-    basestring = basestring
     unicodeT = unicode
 
     def to_bytes(obj, charset='utf-8', errors='strict'):
@@ -308,7 +307,7 @@ class TemplateParser(object):
 
         self.delimiters = delimiters
         escaped_delimiters = (escape(delimiters[0]), escape(delimiters[1]))
-        self.r_tag = compile(r'(%s.*?%s)' % escaped_delimiters, DOTALL)
+        self.r_tag = compile('(%s.*?%s)' % escaped_delimiters, DOTALL)
 
         # Create a root level Content that everything will go into.
         self.content = Content(name=name)

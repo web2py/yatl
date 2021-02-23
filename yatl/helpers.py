@@ -1,19 +1,18 @@
 import cgi
 import copy
-import functools
 import re
 import marshal
 from . import sanitizer
 from .sanitizer import xmlescape, PY2
 
-try:
+if PY2:
     # python 2
     import copy_reg
-except ImportError:
+else:
     # python 3
     import copyreg as copy_reg
 
-    str, unicode = bytes, str
+    unicode = basestring = str
 
 __all__ = [
     "A",
@@ -115,16 +114,22 @@ class TAGGER(object):
             )
             return "<%s%s>%s</%s>" % (name, joined, content, name)
 
-    def __unicode__(self):
-        return self.xml()
+    if PY2:
+        def __unicode__(self):
+            return self.xml()
 
-    def __str__(self):
-        data = self.xml()
-        if PY2 and isinstance(data, unicode):
-            data = data.encode("utf8")
-        elif not PY2 and isinstance(data, bytes):
-            data = data.decode("utf8")
-        return data
+        def __str__(self):
+            data = self.xml()
+            if isinstance(data, unicode):
+                data = data.encode("utf8")
+            return data
+
+    else:
+        def __str__(self):
+            data = self.xml()
+            if isinstance(data, bytes):
+                data = data.decode("utf8")
+            return data
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -159,10 +164,10 @@ class TAGGER(object):
         new_attributes.update(**attributes)
         return TAGGER(self.name, *new_children, **new_attributes)
 
-    regex_tag = re.compile("^[\w\-\:]+")
-    regex_id = re.compile("#([\w\-]+)")
-    regex_class = re.compile("\.([\w\-]+)")
-    regex_attr = re.compile("\[([\w\-\:]+)=(.*?)\]")
+    regex_tag = re.compile(r"^[\w:-]+")
+    regex_id = re.compile(r"#([\w-]+)")
+    regex_class = re.compile(r"\.([\w-]+)")
+    regex_attr = re.compile(r"\[([\w:-]+)=(.*?)\]")
 
     def find(self, query=None, **kargs):
         """
@@ -185,18 +190,21 @@ class TAGGER(object):
 
         Examples:
 
-        >>> a=TAG('<div><span><a id="1-1" u:v=$>hello</a></span><p class="this is a test">world</p></div>')
-        >>> for e in a.find('div a#1-1, p.is'): print(e.flatten())
-        hello
-        world
-        >>> for e in a.find('#1-1'): print(e.flatten())
-        hello
+        >>> a = DIV(SPAN(A('hello', **{'_id': '1-1', '_u:v': '$'})), P('world', _class='this is a test'))
+        >>> for e in a.find('div a#1-1, p.is'): print(e)
+        <a id="1-1" u:v="$">hello</a>
+        <p class="this is a test">world</p>
+        >>> for e in a.find('#1-1'): print(e)
+        <a id="1-1" u:v="$">hello</a>
         >>> a.find('a[u:v=$]')[0].xml()
         '<a id="1-1" u:v="$">hello</a>'
-        >>> a=FORM( INPUT(_type='text'), SELECT(list(range(1))), TEXTAREA() )
-        >>> for c in a.find('input, select, textarea'): c['_disabled'] = 'disabled'
+        >>> a = FORM(INPUT(_type='text'),SELECT(OPTION(0)),TEXTAREA())
+        >>> for c in a.find('input, select, textarea'): c['_disabled'] = True
         >>> a.xml()
-        '<form action="#" enctype="multipart/form-data" method="post"><input disabled="disabled" type="text" /><select disabled="disabled"><option value="0">0</option></select><textarea cols="40" disabled="disabled" rows="10"></textarea></form>'
+        '<form><input disabled="disabled" type="text"/><select disabled="disabled"><option>0</option></select><textarea disabled="disabled"></textarea></form>'
+        >>> for c in a.find('input, select, textarea'): c['_disabled'] = False
+        >>> a.xml()
+        '<form><input type="text"/><select><option>0</option></select><textarea></textarea></form>'
 
         Elements that are matched can also be replaced or removed by specifying
         a "replace" argument (note, a list of the original matching elements
@@ -226,11 +234,13 @@ class TAGGER(object):
         >>> a = DIV(DIV(SPAN('x', _class='abc'), DIV(SPAN('y', _class='abc'), SPAN('z', _class='abc'))))
         >>> b = a.find('span', text='y', replace=None)
         >>> print(a)
-        <div><div><span class="abc">x</span><div><span class="abc">z</span></div></div></div>
+        <div><div><span class="abc">x</span><div><span class="abc"></span><span class="abc">z</span></div></div></div>
 
         If a "text" argument is specified, elements will be searched for text
         components that match text, and any matching text components will be
-        replaced (text is ignored if "replace" is not also specified).
+        replaced ("text" is ignored if "replace" is not also specified, use
+        a "find" argument when you only need searching for textual elements).
+
         Like the "find" argument, "text" can be a string or a compiled regex.
 
         Examples:
@@ -251,12 +261,19 @@ class TAGGER(object):
         <div><div><span class="abc">x</span><div><span class="efg">hello</span><span class="abc">z</span></div></div></div>
         """
         if query is not None:
+            sub = []
+            if "," in query:
+                # jQuery multiple selector ("selector1, selector2, selectorN")
+                for subquery in query.split(","):
+                    sub.extend(self.find(subquery, **kargs))
+                return sub
             items = query.split()
             if len(items) > 1:
-                subset = [
-                    a.find(" ".join(items[1:]), **kargs) for a in self.find(items[0])
-                ]
-                return functools.reduce(lambda a, b: a + b, subset, [])
+                # jQuery Descendant Selector ("ancestor descendant")
+                subquery = " ".join(items[1:])
+                for a in self.find(items[0]):
+                    sub.extend(a.find(subquery, **kargs))
+                return sub
             item = items[0]
             if "#" in item or "." in item or "[" in item:
                 match_tag = self.regex_tag.search(item)
@@ -267,15 +284,18 @@ class TAGGER(object):
                 if match_tag:
                     args = [match_tag.group()]
                 if match_id:
+                    # jQuery ID Selector ("#id")
                     kargs["_id"] = match_id.group(1)
                 if match_class:
+                    # jQuery Class Selector (".class")
                     kargs["_class"] = re.compile(
-                        "(?<!\w)%s(?!\w)"
+                        r"(?<!\w)%s(?!\w)"
                         % match_class.group(1)
-                        .replace("-", "\\-")
-                        .replace(":", "\\:")
+                        .replace("-", r"\-")
+                        .replace(":", r"\:")
                     )
                 for item in match_attr:
+                    # jQuery Attribute Equals Selector ("[name=value]")
                     kargs["_" + item.group(1)] = item.group(2)
                 return self.find(*args, **kargs)
         # make a copy of the components
@@ -285,7 +305,7 @@ class TAGGER(object):
         tag = self.name.replace("/", "")
         check = not (query and tag not in query)
         for (key, value) in kargs.items():
-            if key not in ["first_only", "replace", "text"]:
+            if key not in ("first_only", "find", "text", "replace"):
                 if isinstance(value, (str, int)):
                     if str(self[key]) != str(value):
                         check = False
@@ -488,8 +508,12 @@ class XML(TAGGER):
             text = text.decode("utf8")
         self.text = text
 
-    def xml(self):
-        return unicode(self.text)
+    if PY2:
+        def xml(self):
+            return unicode(self.text, "utf8")
+    else:
+        def xml(self):
+            return self.text
 
     def __str__(self):
         return self.text
@@ -550,7 +574,7 @@ def BEAUTIFY(obj):  # FIX ME, dealing with very large objects
         return TABLE(
             TBODY(*[TR(TH(key), TD(BEAUTIFY(value))) for key, value in obj.items()])
         )
-    elif isinstance(obj, (str, unicode)):
+    elif isinstance(obj, basestring):
         return XML(obj)
     else:
         return repr(obj)
