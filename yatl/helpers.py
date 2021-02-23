@@ -199,7 +199,7 @@ class TAGGER(object):
         >>> a.find('a[u:v=$]')[0].xml()
         '<a id="1-1" u:v="$">hello</a>'
         >>> a = FORM(INPUT(_type='text'),SELECT(OPTION(0)),TEXTAREA())
-        >>> for c in a.find('input, select, textarea'): c['_disabled'] = False
+        >>> for c in a.find('input, select, textarea'): c['_disabled'] = True
         >>> a.xml()
         '<form><input disabled="disabled" type="text"/><select disabled="disabled"><option>0</option></select><textarea disabled="disabled"></textarea></form>'
         >>> for c in a.find('input, select, textarea'): c['_disabled'] = False
@@ -238,7 +238,6 @@ class TAGGER(object):
 
         If a "text" argument is specified, elements will be searched for text
         components that match text, and any matching text components will be
-        replaced (text is ignored if "replace" is not also specified).
         replaced ("text" is ignored if "replace" is not also specified, use
         a "find" argument when you only need searching for textual elements).
 
