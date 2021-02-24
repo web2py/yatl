@@ -260,10 +260,10 @@ class TAGGER(object):
         >>> print(a)
         <div><div><span class="abc">x</span><div><span class="efg">hello</span><span class="abc">z</span></div></div></div>
         """
-        if query is not None:
+        if query:
             sub = []
             if "," in query:
-                # jQuery multiple selector ("selector1, selector2, selectorN")
+                # jQuery Multiple Selector ("selector1, selector2, selectorN")
                 for subquery in query.split(","):
                     sub.extend(self.find(subquery, **kargs))
                 return sub
@@ -282,7 +282,7 @@ class TAGGER(object):
                 match_attr = self.regex_attr.finditer(item)
                 args = []
                 if match_tag:
-                    args = [match_tag.group()]
+                    args.append(match_tag.group())
                 if match_id:
                     # jQuery ID Selector ("#id")
                     kargs["_id"] = match_id.group(1)
@@ -294,26 +294,26 @@ class TAGGER(object):
                         .replace("-", r"\-")
                         .replace(":", r"\:")
                     )
-                for item in match_attr:
+                for aitem in match_attr:
                     # jQuery Attribute Equals Selector ("[name=value]")
-                    kargs["_" + item.group(1)] = item.group(2)
+                    kargs["_" + aitem.group(1)] = aitem.group(2)
                 return self.find(*args, **kargs)
-        # make a copy of the components
         matches = []
         # check if the component has an attribute with the same
         # value as provided
         tag = self.name.replace("/", "")
-        check = not (query and tag not in query)
+        # null query ask for all elements found
+        is_matched = not query or tag == query
         for (key, value) in kargs.items():
             if key not in ("first_only", "find", "text", "replace"):
                 if isinstance(value, (str, int)):
                     if str(self[key]) != str(value):
-                        check = False
+                        is_matched = False
                 elif key in self.attributes:
                     if not value.search(str(self[key])):
-                        check = False
+                        is_matched = False
                 else:
-                    check = False
+                    is_matched = False
         if "find" in kargs:
             find = kargs["find"]
             is_regex = not isinstance(find, (str, int))
@@ -321,16 +321,16 @@ class TAGGER(object):
                 if isinstance(c, str) and (
                     (is_regex and find.search(c)) or (str(find) in c)
                 ):
-                    check = True
+                    is_matched = True
         # if found, return the component
-        if check:
+        if is_matched:
             matches.append(self)
 
         first_only = kargs.get("first_only", False)
         replace = kargs.get("replace", False)
         text = replace is not False and kargs.get("text", False)
         is_regex = not isinstance(text, (str, int, bool))
-        find_components = not (check and first_only)
+        find_components = not (is_matched and first_only)
 
         def replace_component(i):
             if replace is None:
@@ -347,7 +347,7 @@ class TAGGER(object):
                 c = self[i]
                 j = i + 1
                 if (
-                    check
+                    is_matched
                     and text
                     and isinstance(c, str)
                     and ((is_regex and text.search(c)) or (str(text) in c))
