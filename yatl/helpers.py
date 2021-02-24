@@ -301,22 +301,24 @@ class TAGGER(object):
         matches = []
         # check if the component has an attribute with the same
         # value as provided
-        tag = self.name.replace("/", "")
-        # null query ask for all elements found
+        tag = self.name.rstrip("/")
+        # a null query found all elements
         is_matched = not query or tag == query
         for (key, value) in kargs.items():
             if key not in ("first_only", "find", "text", "replace"):
                 if isinstance(value, (str, int)):
+                    # attribute equals test (e.g. _id, _disabled)
                     if str(self[key]) != str(value):
                         is_matched = False
                 elif key in self.attributes:
+                    # attribute regex test (e.g. _class)
                     if not value.search(str(self[key])):
                         is_matched = False
                 else:
                     is_matched = False
         if "find" in kargs:
             find = kargs["find"]
-            is_regex = not isinstance(find, (str, int))
+            is_regex = hasattr(find, 'search')
             for c in self.children:
                 if isinstance(c, str) and (
                     (is_regex and find.search(c)) or (str(find) in c)
@@ -329,7 +331,7 @@ class TAGGER(object):
         first_only = kargs.get("first_only", False)
         replace = kargs.get("replace", False)
         text = replace is not False and kargs.get("text", False)
-        is_regex = not isinstance(text, (str, int, bool))
+        is_regex = hasattr(text, 'search')
         find_components = not (is_matched and first_only)
 
         def replace_component(i):
