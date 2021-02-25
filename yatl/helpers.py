@@ -318,7 +318,7 @@ class TAGGER(object):
                     is_matched = False
         if "find" in kargs:
             find = kargs["find"]
-            is_regex = hasattr(find, 'search')
+            is_regex = hasattr(find, "search")
             for c in self.children:
                 if isinstance(c, str) and (
                     (is_regex and find.search(c)) or (str(find) in c)
@@ -331,7 +331,7 @@ class TAGGER(object):
         first_only = kargs.get("first_only", False)
         replace = kargs.get("replace", False)
         text = replace is not False and kargs.get("text", False)
-        is_regex = hasattr(text, 'search')
+        is_regex = hasattr(text, "search")
         find_components = not (is_matched and first_only)
 
         def replace_component(i):
