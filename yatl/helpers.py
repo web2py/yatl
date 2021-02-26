@@ -404,7 +404,8 @@ class CAT(TAGGER):
         else:
             # attributes are set on all childrens
             for child in self.children:
-                child[key] = value
+                if isinstance(child, TAGGER):
+                    child[key] = value
 
     def xml(self):
         return "".join(
