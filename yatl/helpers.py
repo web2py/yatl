@@ -151,7 +151,8 @@ class TAGGER(object):
 
     def __delitem__(self, key):
         if isinstance(key, int):
-            self.children = self.children[:key] + self.children[key + 1 :]
+            try: del self.children[key]
+            except IndexError: pass
         else:
             del self.attributes[key]
 
@@ -159,7 +160,7 @@ class TAGGER(object):
         return len(self.children)
 
     def amend(self, *children, **attributes):
-        new_children = list(children) if children else copy.copy(self.children)
+        new_children = children if children else copy.copy(self.children)
         new_attributes = copy.copy(self.attributes)
         new_attributes.update(**attributes)
         return TAGGER(self.name, *new_children, **new_attributes)
@@ -306,7 +307,10 @@ class TAGGER(object):
         is_matched = not query or tag == query
         for (key, value) in kargs.items():
             if key not in ("first_only", "find", "text", "replace"):
-                if isinstance(value, (str, int)):
+                if tag == "cat":
+                    # CAT instances have not attributes
+                    is_matched = False
+                elif isinstance(value, (str, int)):
                     # attribute equals test (e.g. _id, _disabled)
                     if str(self[key]) != str(value):
                         is_matched = False
@@ -358,7 +362,11 @@ class TAGGER(object):
                 elif find_components and isinstance(c, TAGGER):
                     child_matches = c.find(query, **kargs)
                     if len(child_matches):
-                        if not text and replace is not False and child_matches[0] is c:
+                        if (
+                            not text
+                            and replace is not False
+                            and child_matches[0] is c
+                        ):
                             j = replace_component(i)
                         if first_only:
                             return child_matches
@@ -384,7 +392,19 @@ class METATAG(object):
 
 class CAT(TAGGER):
     def __init__(self, *children):
-        self.children = children
+        self.name = "cat"
+        self.children = list(children)
+        for child in self.children:
+            if isinstance(child, TAGGER):
+                child.parent = self
+
+    def __setitem__(self, key, value):
+        if isinstance(key, int):
+            self.children[key] = value
+        else:
+            # attributes are set on all childrens
+            for child in self.children:
+                child[key] = value
 
     def xml(self):
         return "".join(
