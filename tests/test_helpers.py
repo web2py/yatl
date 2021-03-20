@@ -3,11 +3,6 @@ import unittest
 
 
 class TestHelpers(unittest.TestCase):
-    def test_all_tags(self):
-        for x in TAG.__all_tags__:
-            self.assertEqual(TAG[x]().xml(), "<%s></%s>" %
-                (x, x) if not x[-1] == "/" else "<%s>" % x)
-
     def test_tags(self):
         DIV = TAG.div
         IMG = TAG['img/']
