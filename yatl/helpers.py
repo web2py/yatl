@@ -377,12 +377,6 @@ class TAGGER(object):
 
 class METATAG(object):
 
-    __all_tags__ = set()
-
-    @classmethod
-    def _add_tag(cls, name):
-        cls.__all_tags__.add(name)
-
     def __getattr__(self, name):
         return self[name]
 
@@ -588,7 +582,7 @@ copy_reg.pickle(XML, XML_pickle, XML_unpickle)
 # ################################################################
 
 
-def BEAUTIFY(obj):  # FIX ME, dealing with very large objects
+def BEAUTIFY(obj):  # FIXME: dealing with very large objects
     if is_helper(obj):
         return obj
     elif isinstance(obj, list):
