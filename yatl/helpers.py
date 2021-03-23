@@ -266,7 +266,7 @@ class TAGGER(object):
             if "," in query:
                 # jQuery Multiple Selector ("selector1, selector2, selectorN")
                 for subquery in query.split(","):
-                    sub.extend(self.find(subquery, **kargs))
+                    sub.extend(self.find(subquery.strip(), **kargs))
                 return sub
             items = query.split()
             if len(items) > 1:
@@ -321,6 +321,7 @@ class TAGGER(object):
                 else:
                     is_matched = False
         if "find" in kargs:
+            is_matched = False
             find = kargs["find"]
             is_regex = hasattr(find, "search")
             for c in self.children:
