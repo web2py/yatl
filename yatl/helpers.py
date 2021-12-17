@@ -444,6 +444,7 @@ STRONG = TAG.strong
 SELECT = TAG.select
 OPTION = TAG.option
 TEXTAREA = TAG.textarea
+BUTTON = TAG.button
 TITLE = TAG.title
 IMG = TAG["img/"]
 INPUT = TAG["input/"]
