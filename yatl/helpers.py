@@ -1,9 +1,11 @@
 import copy
-import re
+import copyreg as copy_reg
 import marshal
+import re
+
 from . import sanitizer
 from .sanitizer import xmlescape
-import copyreg as copy_reg
+
 
 def escape(value):
     if isinstance(value, str):
@@ -11,6 +13,7 @@ def escape(value):
     elif isinstance(value, bytes):
         return xmlescape(value.decode("utf8"))
     return str(value)
+
 
 __all__ = [
     "A",
@@ -73,7 +76,7 @@ INVALID_CHARS = set(" ='\"></")
 
 def _vk(k):
     """validate atribute name of tag
-        @k: atribute name
+    @k: atribute name
     """
     invalid_chars = set(k) & INVALID_CHARS
     if invalid_chars:
@@ -112,8 +115,7 @@ class TAGGER:
             return "<%s%s/>" % (name[0:-1], joined)
         else:
             content = "".join(
-                s.xml() if is_helper(s) else escape(s)
-                for s in self.children
+                s.xml() if is_helper(s) else escape(s) for s in self.children
             )
             return "<%s%s>%s</%s>" % (name, joined, content, name)
 
@@ -143,8 +145,10 @@ class TAGGER:
 
     def __delitem__(self, key):
         if isinstance(key, int):
-            try: del self.children[key]
-            except IndexError: pass
+            try:
+                del self.children[key]
+            except IndexError:
+                pass
         else:
             del self.attributes[key]
 
@@ -283,9 +287,7 @@ class TAGGER:
                     # jQuery Class Selector (".class")
                     kargs["_class"] = re.compile(
                         r"(?<!\w)%s(?!\w)"
-                        % match_class.group(1)
-                        .replace("-", r"\-")
-                        .replace(":", r"\:")
+                        % match_class.group(1).replace("-", r"\-").replace(":", r"\:")
                     )
                 for aitem in match_attr:
                     # jQuery Attribute Equals Selector ("[name=value]")
@@ -357,11 +359,7 @@ class TAGGER:
                 elif find_components and isinstance(c, TAGGER):
                     child_matches = c.find(query, **kargs)
                     if len(child_matches):
-                        if (
-                            not text
-                            and replace is not False
-                            and child_matches[0] is c
-                        ):
+                        if not text and replace is not False and child_matches[0] is c:
                             j = replace_component(i)
                         if first_only:
                             return child_matches
@@ -371,7 +369,6 @@ class TAGGER:
 
 
 class METATAG:
-
     def __getattr__(self, name):
         return self[name]
 
