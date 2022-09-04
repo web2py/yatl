@@ -1,18 +1,16 @@
-import cgi
 import copy
 import re
 import marshal
 from . import sanitizer
-from .sanitizer import xmlescape, PY2
+from .sanitizer import xmlescape
+import copyreg as copy_reg
 
-if PY2:
-    # python 2
-    import copy_reg
-else:
-    # python 3
-    import copyreg as copy_reg
-
-    unicode = basestring = str
+def escape(value):
+    if isinstance(value, str):
+        return xmlescape(value)
+    elif isinstance(value, bytes):
+        return xmlescape(value.decode("utf8"))
+    return str(value)
 
 __all__ = [
     "A",
@@ -56,6 +54,7 @@ __all__ = [
     "UL",
     "XML",
     "xmlescape",
+    "escape",
     "I",
     "META",
     "LINK",
@@ -82,14 +81,18 @@ def _vk(k):
     return k
 
 
-class TAGGER(object):
+class TAGGER:
     def __init__(self, name, *children, **attributes):
-        self.name = name
+        self._name = name
         self.children = list(children)
         self.attributes = attributes
         for child in self.children:
             if isinstance(child, TAGGER):
                 child.parent = self
+
+    @property
+    def name(self):
+        return self._name
 
     def xml(self):
         name = self.name
@@ -100,7 +103,7 @@ class TAGGER(object):
                 if value is True:
                     value = _vk(key[1:])
                 else:
-                    value = xmlescape(unicode(value))
+                    value = escape(value)
                 parts.append('%s="%s"' % (_vk(key[1:]), value))
         joined = " ".join(parts)
         if joined:
@@ -109,27 +112,16 @@ class TAGGER(object):
             return "<%s%s/>" % (name[0:-1], joined)
         else:
             content = "".join(
-                s.xml() if is_helper(s) else xmlescape(unicode(s))
+                s.xml() if is_helper(s) else escape(s)
                 for s in self.children
             )
             return "<%s%s>%s</%s>" % (name, joined, content, name)
 
-    if PY2:
-        def __unicode__(self):
-            return self.xml()
-
-        def __str__(self):
-            data = self.xml()
-            if isinstance(data, unicode):
-                data = data.encode("utf8")
-            return data
-
-    else:
-        def __str__(self):
-            data = self.xml()
-            if isinstance(data, bytes):
-                data = data.decode("utf8")
-            return data
+    def __str__(self):
+        data = self.xml()
+        if isinstance(data, bytes):
+            data = data.decode("utf8")
+        return data
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -300,6 +292,8 @@ class TAGGER(object):
                     kargs["_" + aitem.group(1)] = aitem.group(2)
                 return self.find(*args, **kargs)
         matches = []
+        if self.name is None:
+            return matches
         # check if the component has an attribute with the same
         # value as provided
         tag = self.name.rstrip("/")
@@ -376,7 +370,7 @@ class TAGGER(object):
         return matches
 
 
-class METATAG(object):
+class METATAG:
 
     def __getattr__(self, name):
         return self[name]
@@ -521,18 +515,13 @@ class XML(TAGGER):
 
         if sanitize:
             text = sanitizer.sanitize(text, permitted_tags, allowed_attributes)
-        if PY2 and isinstance(text, unicode):
-            text = text.encode("utf8", "xmlcharrefreplace")
-        elif not PY2 and isinstance(text, bytes):
+        if isinstance(text, bytes):
             text = text.decode("utf8")
         self.text = text
+        self._name = None
 
-    if PY2:
-        def xml(self):
-            return unicode(self.text, "utf8")
-    else:
-        def xml(self):
-            return self.text
+    def xml(self):
+        return self.text
 
     def __str__(self):
         return self.text
@@ -593,7 +582,7 @@ def BEAUTIFY(obj):  # FIXME: dealing with very large objects
         return TABLE(
             TBODY(*[TR(TH(key), TD(BEAUTIFY(value))) for key, value in obj.items()])
         )
-    elif isinstance(obj, basestring):
+    elif isinstance(obj, str):
         return XML(obj)
     else:
         return repr(obj)

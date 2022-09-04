@@ -124,7 +124,7 @@ class TestHelpers(unittest.TestCase):
     def test_find(self):
         a = DIV('A', _class='a')
         b = SPAN('B', _id='b')
-        div = DIV(DIV(a), DIV(b))
+        div = DIV(DIV(a), DIV(b), XML("<div class='a'>dummy</div>"))
         self.assertEqual(div.find('.a')[0], a)
         self.assertEqual(div.find('#b')[0], b)
         self.assertEqual(div.find('div.a')[0], a)

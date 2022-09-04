@@ -11,8 +11,8 @@ build:	clean
 install: build
 	python3 setup.py install
 test: build
-	python -m unittest tests
+	python3 -m unittest tests
 deploy: test
 	#http://guide.python-distribute.org/creation.html
-	python setup.py sdist
+	python3 setup.py sdist
 	twine upload dist/*
