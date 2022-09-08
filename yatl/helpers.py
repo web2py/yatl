@@ -378,7 +378,7 @@ class METATAG:
 
 class CAT(TAGGER):
     def __init__(self, *children):
-        self.name = "cat"
+        self._name = "cat"
         self.children = list(children)
         for child in self.children:
             if isinstance(child, TAGGER):
