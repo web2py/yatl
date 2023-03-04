@@ -31,7 +31,6 @@ if PY2:
     def to_native(obj, charset="utf8", errors="strict"):
         return obj if isinstance(obj, str) else obj.encode(charset, errors)
 
-
 else:
     from io import StringIO
 

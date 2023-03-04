@@ -2,9 +2,12 @@ import copy
 import copyreg as copy_reg
 import marshal
 import re
+import sys
 
 from . import sanitizer
 from .sanitizer import xmlescape
+
+unicodeT = unicode if sys.version_info[0] == 2 else str
 
 
 def escape(value):
@@ -395,7 +398,7 @@ class CAT(TAGGER):
 
     def xml(self):
         return "".join(
-            s.xml() if isinstance(s, TAGGER) else xmlescape(unicode(s))
+            s.xml() if isinstance(s, TAGGER) else xmlescape(unicodeT(s))
             for s in self.children
         )
 
