@@ -1,0 +1,17 @@
+[project]
+name = "yatl"
+version = "20230507.3"
+authors = [{ name="Massimo Di Pierro", email="massimo.dipierro@gmail.com" },]
+description = "Yet Another Teplate Language (it has been around since 2007)"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+      "Programming Language :: Python :: 3",
+      "License :: OSI Approved :: BSD License",
+      "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/web2py/yatl"
+"Bug Tracker" = "https://github.com/web2py/yatl/issues"
+"Documentation" = "https://py4web.com/_documentation/static/en/chapter-09.html"
