@@ -1,18 +1,11 @@
-.PHONY: clean build install test deploy
-clean:
-	rm dist/* | echo ''
-	find . -name '*.pyc' -delete
-	find . -name '*~' -delete
-	find . -name '#*' -delete
-	python3 setup.py clean
-build:	clean
-	python3 setup.py clean
-	python3 setup.py build
-install: build
-	python3 setup.py install
-test: build
-	python3 -m unittest tests
-deploy: test
-	#http://guide.python-distribute.org/creation.html
-	python3 setup.py sdist
-	twine upload dist/*
+.PHONY: venv test build deploy
+venv:
+	python3 -m venv venv
+test: venv
+	venv/bin/python -m unittest tests
+build:
+	python3 -m pip install --upgrade build
+	python3 -m pip install --upgrade twine
+	python3 -m build
+deploy: build
+	python3 -m twine upload dist/*
