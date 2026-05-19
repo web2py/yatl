@@ -4,11 +4,10 @@
     Unit tests for gluon.template
 """
 
-import sys
 import unittest
 
 from yatl import render
-from yatl.template import NOESCAPE, DummyResponse, RestrictedError
+from yatl.template import NOESCAPE, DummyResponse
 
 
 class TestTemplate(unittest.TestCase):
@@ -68,11 +67,6 @@ class TestTemplate(unittest.TestCase):
     def testWithDummyFileSystem(self):
         import contextlib
         from os.path import join as pjoin
-
-        if sys.version_info[0] == 2:
-            from cStringIO import StringIO
-        else:
-            from io import StringIO
 
         @contextlib.contextmanager
         def monkey_patch(module, fn_name, patch):

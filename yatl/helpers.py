@@ -1,13 +1,10 @@
 import copy
-import copyreg as copy_reg
+import copyreg
 import marshal
 import re
-import sys
 
 from . import sanitizer
 from .sanitizer import xmlescape
-
-unicodeT = unicode if sys.version_info[0] == 2 else str
 
 
 def escape(value):
@@ -398,7 +395,7 @@ class CAT(TAGGER):
 
     def xml(self):
         return "".join(
-            s.xml() if hasattr(s, "xml") and callable(s.xml) else xmlescape(unicodeT(s))
+            s.xml() if hasattr(s, "xml") and callable(s.xml) else xmlescape(str(s))
             for s in self.children
         )
 
@@ -409,7 +406,7 @@ SPAN = TAG.span
 LI = TAG.li
 OL = TAG.ol
 UL = TAG.ul
-I = TAG.i
+I = TAG.i  # noqa: E741
 A = TAG.a
 P = TAG.p
 H1 = TAG.h1
@@ -444,7 +441,8 @@ IMG = TAG["img/"]
 INPUT = TAG["input/"]
 META = TAG["meta/"]
 LINK = TAG["link/"]
-SCRIPT = lambda body, **attr: TAG.script(XML(body), **attr)
+def SCRIPT(body, **attr):
+    return TAG.script(XML(body), **attr)
 
 
 # ################################################################
@@ -532,18 +530,11 @@ class XML(TAGGER):
     def __radd__(self, other):
         return "%s%s" % (other, self)
 
-    def __cmp__(self, other):
-        a, b = str(self), str(other)
-        return (a > b) - (a < b)
-
     def __hash__(self):
         return hash(str(self))
 
     def __getitem__(self, i):
         return str(self)[i]
-
-    def __getslice__(self, i, j):
-        return str(self)[i:j]
 
     def __iter__(self):
         for c in str(self):
@@ -565,7 +556,7 @@ def XML_pickle(data):
     return XML_unpickle, (marshal.dumps(str(data)),)
 
 
-copy_reg.pickle(XML, XML_pickle, XML_unpickle)
+copyreg.pickle(XML, XML_pickle, XML_unpickle)
 
 
 # ################################################################

@@ -10,30 +10,17 @@ Cross-site scripting (XSS) defense
 -----------------------------------
 """
 
-import sys
+from html import escape
+from html.entities import entitydefs
+from html.parser import HTMLParser
+from urllib import parse as urlparse
 from xml.sax.saxutils import quoteattr
 
 __all__ = ["sanitize"]
 
-PY2 = sys.version_info[0] == 2
-
-if PY2:
-    from cgi import escape
-
-    import urlparse
-    from htmlentitydefs import entitydefs, name2codepoint
-    from HTMLParser import HTMLParser
-else:
-    from html import escape
-    from html.entities import entitydefs, name2codepoint
-    from html.parser import HTMLParser
-    from urllib import parse as urlparse
-
-    basestring = str
-
 
 def xmlescape(text, quote=True, colon=False):
-    if not isinstance(text, basestring):
+    if not isinstance(text, str):
         text = str(text)
     data = escape(text, quote)
     if quote:
@@ -69,11 +56,7 @@ class XssCleaner(HTMLParser):
         },
         strip_disallowed=False,
     ):
-
-        if PY2:
-            HTMLParser.__init__(self)
-        else:
-            HTMLParser.__init__(self, convert_charrefs=False)
+        HTMLParser.__init__(self, convert_charrefs=False)
         self.result = ""
         self.open_tags = []
         self.permitted_tags = [i for i in permitted_tags if i[-1] != "/"]
@@ -188,7 +171,7 @@ class XssCleaner(HTMLParser):
           content, otherwise remove it
         """
 
-        if not isinstance(rawstring, basestring):
+        if not isinstance(rawstring, str):
             return str(rawstring)
         for tag in self.requires_no_close:
             rawstring = rawstring.replace("<%s />" % tag, "<%s/>" % tag)
@@ -256,7 +239,7 @@ def sanitize(
     },
     escape=True,
 ):
-    if not isinstance(text, basestring):
+    if not isinstance(text, str):
         return str(text)
     return XssCleaner(
         permitted_tags=permitted_tags, allowed_attributes=allowed_attributes

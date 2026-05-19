@@ -1,10 +1,10 @@
 [project]
 name = "yatl"
-version = "20260518.0"
+version = "20260518.1"
 authors = [{ name="Massimo Di Pierro", email="massimo.dipierro@gmail.com" },]
 description = "Yet Another Teplate Language (it has been around since 2007)"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
       "Programming Language :: Python :: 3",
       "License :: OSI Approved :: BSD License",
