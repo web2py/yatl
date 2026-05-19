@@ -12,4 +12,4 @@ build: test
 	rm -rf dist/* build/*
 	uv build
 publish: build
-	uv run --extra manage -m twine upload dist/*
+	uv run --with twine -m twine upload dist/*
