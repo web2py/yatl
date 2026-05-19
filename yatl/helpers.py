@@ -398,7 +398,7 @@ class CAT(TAGGER):
 
     def xml(self):
         return "".join(
-            s.xml() if isinstance(s, TAGGER) else xmlescape(unicodeT(s))
+            s.xml() if hasattr(s, "xml") and callable(s.xml) else xmlescape(unicodeT(s))
             for s in self.children
         )
 

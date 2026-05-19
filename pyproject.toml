@@ -1,6 +1,6 @@
 [project]
 name = "yatl"
-version = "20230507.3"
+version = "20260518.0"
 authors = [{ name="Massimo Di Pierro", email="massimo.dipierro@gmail.com" },]
 description = "Yet Another Teplate Language (it has been around since 2007)"
 readme = "README.md"
