@@ -280,6 +280,56 @@ class TestHelpers(unittest.TestCase):
             "",
         )
 
+    def test_sanitize_attribute_breakout(self):
+        # XssCleaner.handle_starttag historically emitted url-bearing
+        # attributes (href, src, background) using raw string
+        # interpolation:
+        #
+        #     bt += ' %s="%s"' % (attribute, attrs[attribute])
+        #
+        # HTMLParser decodes character references inside attribute
+        # values before delegating to handle_starttag, so &quot; arrives
+        # as a literal `"`. The unescaped interpolation then let that
+        # quote close the attribute on the way out, injecting sibling
+        # attributes such as onclick=, onerror=, ... -- a real XSS.
+        # Route those attributes through quoteattr like every other
+        # attribute does, and verify with HTMLParser that the cleaned
+        # output never carries an event-handler attribute.
+        from html.parser import HTMLParser
+
+        payloads = [
+            '<a href="https://example.com/&quot; onclick=&quot;alert(1)">x</a>',
+            '<a href="http://a.b/&quot; onmouseover=&quot;alert(1)">x</a>',
+            '<img src="http://a.b/&quot; onerror=&quot;alert(1)" alt="x">',
+            "<a href='http://a.b/&quot; onclick=&quot;alert(1)'>x</a>",
+        ]
+        event_handlers = (
+            "onclick",
+            "onerror",
+            "onmouseover",
+            "onload",
+            "onfocus",
+            "onmouseout",
+        )
+        for raw in payloads:
+            cleaned = XML(raw, sanitize=True).xml()
+            seen_attrs = []
+
+            class _Spy(HTMLParser):
+                def handle_starttag(self, tag, attrs):
+                    seen_attrs.extend(name.lower() for name, _ in attrs)
+
+                handle_startendtag = handle_starttag
+
+            _Spy().feed(cleaned)
+            for handler in event_handlers:
+                self.assertNotIn(
+                    handler,
+                    seen_attrs,
+                    "sanitize() leaked %s via attribute-breakout: %r"
+                    % (handler, cleaned),
+                )
+
     def test_find(self):
         a = DIV("A", _class="a")
         b = SPAN("B", _id="b")
