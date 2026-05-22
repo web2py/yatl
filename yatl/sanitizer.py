@@ -120,7 +120,18 @@ class XssCleaner(HTMLParser):
                 for attribute in self.allowed_attributes_here:
                     if attribute in ["href", "src", "background"]:
                         if self.url_is_acceptable(attrs[attribute]):
-                            bt += ' %s="%s"' % (attribute, attrs[attribute])
+                            # Route URL-bearing attributes through
+                            # quoteattr like every other attribute below.
+                            # HTMLParser decodes character references
+                            # (e.g. &quot; -> ") inside attribute values
+                            # before handing them to us, so naive
+                            # interpolation lets attacker-supplied quotes
+                            # close the attribute and inject sibling
+                            # attributes such as onclick=, onerror=, etc.
+                            bt += " %s=%s" % (
+                                attribute,
+                                quoteattr(attrs[attribute]),
+                            )
                     else:
                         bt += " %s=%s" % (
                             xmlescape(attribute),
